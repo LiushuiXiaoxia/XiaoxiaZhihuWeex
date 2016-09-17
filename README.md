@@ -26,7 +26,7 @@
 
 ## 使用
 
-下载Weex源码，复制本项目中zhihu文件夹到weexexas目录中，然后修改examples/index.we文件。
+下载Weex源码，复制本项目中zhihu文件夹到weex examples目录中，然后修改examples/index.we文件。
 
 根据index.we中的示例，然后添加如下代码，然后运行playground即可。
 
