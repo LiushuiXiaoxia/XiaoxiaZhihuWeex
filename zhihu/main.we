@@ -1,0 +1,98 @@
+<template>
+  <div class="ct" >
+    <image id="image" class="image" src="{{img}}"></image>
+    <div style="align-items:center">
+      <text class="text">{{text}}</text>      
+    </div>            
+  </div>
+</template>
+
+<style>
+  .ct {
+    align-items: stretch;
+  }
+  .image {
+    flex:1;
+  }
+  .text {
+    font-size:30;
+    color:black;
+  }
+</style>
+
+<script>
+  module.exports = {
+    data: {
+      text: "Pascale Amez",
+      img: "https://pic4.zhimg.com/v2-98ecedb695ce12ef94068c3b655f211f.jpg",
+      dir: 'examples'
+    },
+    ready: function () {
+      var animation = require('@weex-module/animation');
+      var testEl = this.$el('image');
+      var me = this;
+
+      animation.transition(testEl, {
+        styles: {
+            color: '#FF0000',
+            transform: 'translate(1, 1)'
+          },
+          duration: 3000, // ms
+          timingFunction: 'ease',
+          'transform-origin': 'center center', // 中间有连字符，最好加上影号
+          delay: 0 // ms
+        }, function () {
+          var navigator = require('@weex-module/navigator');
+          var nextUrl = me.getBase()+'zhihu/themes.js';
+          var params = 
+          navigator.push({'url':nextUrl,'animated' : 'true'},null);
+          require('@weex-module/event').openURL(nextUrl)
+        });
+
+        this.loadData();
+    },
+    methods:{
+      loadData:function(){
+        var stream = require('@weex-module/stream');
+        var url = "https://news-at.zhihu.com/api/4/start-image/1080*1776";
+        stream.fetch({
+            method: 'GET',
+            url: url,
+            headers:{"Cache-Control":"no-cache","Content-Type":"application/json"},
+            type:'json'
+        }, function(response) {
+          console.log("xiaqiulei response = "+ JSON.stringify(response.data))
+          var json = response.data
+          me.img = json.img;
+          me.text = json.text;
+        });
+      },
+      getBase:function(){
+        var bundleUrl = this.$getConfig().bundleUrl;
+        var nativeBase;
+        var isAndroidAssets = bundleUrl.indexOf('file://assets/') >= 0;
+        var isiOSAssets = bundleUrl.indexOf('file:///') >= 0 && bundleUrl.indexOf('WeexDemo.app') > 0;
+        if (isAndroidAssets) {
+            nativeBase = 'file://assets/';
+        } else if (isiOSAssets) {
+            nativeBase = bundleUrl.substring(0, bundleUrl.lastIndexOf('/') + 1);
+        } else {
+            var host = 'localhost:12580';
+            var matches = /\/\/([^\/]+?)\//.exec(this.$getConfig().bundleUrl);
+            if (matches && matches.length >= 2) {
+                host = matches[1];
+            }
+            nativeBase = 'http://' + host + '/' + this.dir + '/build/';
+        }
+        var h5Base = './' + this.dir + '/build/';
+        // in Native
+        var base = nativeBase;
+        if (typeof window === 'object') {
+            // in Browser or WebView
+            base = h5Base;
+        }
+        return base
+      }
+    }
+  }
+</script>

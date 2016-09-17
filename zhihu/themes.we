@@ -1,0 +1,105 @@
+<template>
+  <div class="ct">
+    <list class="list">
+      <cell repeat="{{rows}}" index="{{$index}}" onclick="onItemClick">
+        <div class="item">
+          <text class="item-title">{{name}}</text>
+          <image style="width:80;height:80;" src="{{thumbnail}}"></image>          
+        </div>
+      </cell>
+    </list>
+  </div>
+</template>
+
+<style>
+  .ct {
+    flex:1;
+  }
+  .item {
+    flex-direction:row;
+    align-items: center;
+    justify-content:center;    
+    border-bottom-width: 0.5;
+    border-bottom-color: #c0c0c0;
+    padding:10;
+  }
+  .item-title {
+    flex:1;
+    margin-left:20;
+    font-size:40;
+  }
+</style>
+
+<script>
+  module.exports = {
+    data: {
+      rows:[],
+      dir:'examples'
+    },
+    methods:{
+      onItemClick:function(e){
+        var index = e.target.attr.index;
+
+        if(index==0){
+          var navigator = require('@weex-module/navigator');
+          var nextUrl =this.getBase()+'zhihu/hotnews.js';
+          // navigator.push({'url':nextUrl,'animated' : 'true'},null);
+          require('@weex-module/event').openURL(nextUrl)
+        } else {
+          var navigator = require('@weex-module/navigator');
+          var nextUrl =this.getBase()+'zhihu/normalnews.js?id='+this.rows[index].id;
+          // navigator.push({'url':nextUrl,'animated' : 'true'},null);
+          require('@weex-module/event').openURL(nextUrl)
+        }
+      },
+      getBase:function(){
+        var bundleUrl = this.$getConfig().bundleUrl;
+        var nativeBase;
+        var isAndroidAssets = bundleUrl.indexOf('file://assets/') >= 0;
+        var isiOSAssets = bundleUrl.indexOf('file:///') >= 0 && bundleUrl.indexOf('WeexDemo.app') > 0;
+        if (isAndroidAssets) {
+            nativeBase = 'file://assets/';
+        } else if (isiOSAssets) {
+            nativeBase = bundleUrl.substring(0, bundleUrl.lastIndexOf('/') + 1);
+        } else {
+            var host = 'localhost:12580';
+            var matches = /\/\/([^\/]+?)\//.exec(this.$getConfig().bundleUrl);
+            if (matches && matches.length >= 2) {
+                host = matches[1];
+            }
+            nativeBase = 'http://' + host + '/' + this.dir + '/build/';
+        }
+        var h5Base = './' + this.dir + '/build/';
+        // in Native
+        var base = nativeBase;
+        if (typeof window === 'object') {
+            // in Browser or WebView
+            base = h5Base;
+        }
+        return base
+      },
+      loadData:function(){
+        var me = this
+        var stream = require('@weex-module/stream');
+        var url = "https://news-at.zhihu.com/api/4/themes";
+        stream.fetch({
+            method: 'GET',
+            url: url,
+            headers:{"Cache-Control":"no-cache","Content-Type":"application/json"},
+            type:'json'
+        }, function(response) {
+            var temp =[];
+            temp.push({'name':'今日热闻','thumbnail':null})
+            var others = response.data.others;
+            for(var i in others) {
+                temp.push(others[i]);
+            }
+            me.rows = temp;
+        })
+      }
+    },
+    ready: function () {
+      this.loadData();
+    }
+  }
+</script>

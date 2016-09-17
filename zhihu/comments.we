@@ -1,0 +1,162 @@
+<template>
+  <div class="ct">
+    <text style="margin:20;text-align:center">Comments List</text>
+    <list>
+      <cell class="row" repeat="{{rows}}" index="{{$index}}" onclick="onItemClick">
+        <div if="{{count==null}}" class="item">
+            <div style="flex-direction:row">
+                <image style="width:50;height:50;" src="{{avatar}}"></image>
+                <text class="item-title">{{author}}</text>
+                <text>赞({{likes}})</text>
+            </div>            
+            <text style="font-size:25;padding:10">{{content}}</text>
+            <text style="font-size:20;padding-left:10">{{new Date(time*1000).toLocaleString()}}</text>
+        </div>
+        <div if="{{count}}" class="item">
+            <text style="font-size:20;padding-left:10">{{count}}长评论</text>
+        </div>
+      </cell>
+    </list>
+  </div>
+</template>
+
+<style>
+  .ct {
+    flex:1;
+  }
+  .row {
+    width:750;
+    justify-content:center;
+  }
+  .item {
+    flex-direction:column;
+    width:750;
+    align-items: flex-start;
+    border-bottom-width: 0.5;
+    border-bottom-color: #c0c0c0;
+    padding:20;
+  }
+  .item-title {
+    flex:1;
+    margin-left:20;
+    font-size:40;
+  }
+</style>
+
+<script>
+  module.exports = {
+    data: {
+      rows:[],
+      newsId:0,
+      longs:[],
+      shorts:[],
+    },
+    methods:{
+       getBase:function(){
+        var bundleUrl = this.$getConfig().bundleUrl;
+        var nativeBase;
+        var isAndroidAssets = bundleUrl.indexOf('file://assets/') >= 0;
+        var isiOSAssets = bundleUrl.indexOf('file:///') >= 0 && bundleUrl.indexOf('WeexDemo.app') > 0;
+        if (isAndroidAssets) {
+            nativeBase = 'file://assets/';
+        } else if (isiOSAssets) {
+            nativeBase = bundleUrl.substring(0, bundleUrl.lastIndexOf('/') + 1);
+        } else {
+            var host = 'localhost:12580';
+            var matches = /\/\/([^\/]+?)\//.exec(this.$getConfig().bundleUrl);
+            if (matches && matches.length >= 2) {
+                host = matches[1];
+            }
+            nativeBase = 'http://' + host + '/' + this.dir + '/build/';
+        }
+        var h5Base = './' + this.dir + '/build/';
+        // in Native
+        var base = nativeBase;
+        if (typeof window === 'object') {
+            // in Browser or WebView
+            base = h5Base;
+        }
+        base = 'http://10.97.192.31:12580/examples/build/zhihu/'
+        return base
+      },
+      onItemClick:function(e){
+      }
+    },
+    ready: function () {
+        var url = this.$getConfig().bundleUrl;
+        var index = url.indexOf('?')
+        var substring = url.substring(index+1);
+        var params = substring.split('=')
+        if(params.length !=2){
+            return;
+        }
+        var id = params[1]
+        this.newsId = id;
+        console.log('xiaqiulei.substring = '+id)
+
+        var me = this
+        var stream = require('@weex-module/stream');
+        var url = "https://news-at.zhihu.com/api/4/story/"+id+"/long-comments";
+        console.log("xiaqiulei.url = "+url)      
+        stream.fetch({
+            method: 'GET',
+            url: url,
+            headers:{"Cache-Control":"no-cache","Content-Type":"application/json"},
+            type:'json'
+        }, function(response) {
+            console.log("xiaqiulei  reponse = "+JSON.stringify(response.data))
+            var others = response.data.comments;
+            me.longs = others;
+
+            console.log('xiaqiulei.others = '+ others.length)
+
+            var temp =[];
+            temp.push({
+                "count":me.longs.length
+            });
+            for( var i in me.longs){
+                temp.push(me.longs[i]);
+            }
+
+            temp.push({
+                "count":me.shorts.length
+            });
+            for( var i in me.shorts){
+                temp.push(me.shorts[i]);
+            }
+
+            me.rows = temp;
+        })
+
+        url = "https://news-at.zhihu.com/api/4/story/"+id+"/short-comments";
+        console.log("xiaqiulei.url = "+url)      
+        stream.fetch({
+            method: 'GET',
+            url: url,
+            headers:{"Cache-Control":"no-cache","Content-Type":"application/json"},
+            type:'json'
+        }, function(response) {
+            console.log("xiaqiulei  short = "+JSON.stringify(response.data))
+            var others = response.data.comments;
+            me.shorts = others;
+
+            var temp =[];
+            temp.push({
+                "count":me.longs.length
+            });
+            for( var i in me.longs){
+                temp.push(me.longs[i]);
+            }
+
+            temp.push({
+                "count":me.shorts.length
+            });
+            for( var i in me.shorts){
+                temp.push(me.shorts[i]);
+            }
+
+            me.rows = temp;
+        })
+    }
+  }
+</script>
