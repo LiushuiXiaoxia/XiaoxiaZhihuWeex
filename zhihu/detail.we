@@ -31,7 +31,7 @@
         var substring = url.substring(index+1);
         var params = substring.split('=');
         var id = params[1];
-        this.webUrl = ' https://daily.zhihu.com/story/'+id;
+        this.webUrl = 'https://daily.zhihu.com/story/'+id;
         console.log('xiaqiulei webUrl = '+webUrl)
       }
     },

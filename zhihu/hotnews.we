@@ -42,11 +42,8 @@
         var index = e.target.attr.index;
         var navigator = require('@weex-module/navigator');
         var nextUrl =this.getBase()+'zhihu/detail.js?id='+this.rows[index].id;
-        var params = {
-          'url': nextUrl,
-          'animated' : 'true',
-        };
-        navigator.push(params, null);
+        // navigator.push({'url': nextUrl,'animated' : 'true'}, null);
+        require('@weex-module/event').openURL(nextUrl)
       },
       getBase:function(){
         var bundleUrl = this.$getConfig().bundleUrl;
@@ -89,6 +86,8 @@
            // me.rows = response.data.top_stories;
            me.rows = response.data.stories;                     
         }
+      }, function(response){
+          
       })
     }
   }

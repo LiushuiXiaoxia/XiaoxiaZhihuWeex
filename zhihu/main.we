@@ -28,31 +28,32 @@
       dir: 'examples'
     },
     ready: function () {
-      var animation = require('@weex-module/animation');
-      var testEl = this.$el('image');
-      var me = this;
-
-      animation.transition(testEl, {
-        styles: {
-            color: '#FF0000',
-            transform: 'translate(1, 1)'
-          },
-          duration: 3000, // ms
-          timingFunction: 'ease',
-          'transform-origin': 'center center', // 中间有连字符，最好加上影号
-          delay: 0 // ms
-        }, function () {
-          var navigator = require('@weex-module/navigator');
-          var nextUrl = me.getBase()+'zhihu/themes.js';
-          var params = 
-          navigator.push({'url':nextUrl,'animated' : 'true'},null);
-          require('@weex-module/event').openURL(nextUrl)
-        });
-
-        this.loadData();
+      this.doAnim();
+      this.loadData();
     },
     methods:{
-      loadData:function(){
+      doAnim:function() {
+        var me = this;
+        var animation = require('@weex-module/animation');
+        var element = this.$el('image');
+        animation.transition(element, {
+          styles: {
+              color: '#FF0000',
+              transform: 'translate(1, 1)'
+            },
+            duration: 3000, // ms
+            timingFunction: 'ease',
+            'transform-origin': 'center center', // 中间有连字符，最好加上影号
+            delay: 0 // ms
+          }, function () {
+            var navigator = require('@weex-module/navigator');
+            var nextUrl = me.getBase()+'zhihu/themes.js';
+            // navigator.push({'url':nextUrl, 'animated':'true'},null);
+            require('@weex-module/event').openURL(nextUrl);
+          });
+      },
+      loadData:function() {
+        var me = this;
         var stream = require('@weex-module/stream');
         var url = "https://news-at.zhihu.com/api/4/start-image/1080*1776";
         stream.fetch({
@@ -65,9 +66,11 @@
           var json = response.data
           me.img = json.img;
           me.text = json.text;
+        }, function(response){
+          
         });
       },
-      getBase:function(){
+      getBase:function() {
         var bundleUrl = this.$getConfig().bundleUrl;
         var nativeBase;
         var isAndroidAssets = bundleUrl.indexOf('file://assets/') >= 0;
@@ -91,7 +94,7 @@
             // in Browser or WebView
             base = h5Base;
         }
-        return base
+        return base;
       }
     }
   }
